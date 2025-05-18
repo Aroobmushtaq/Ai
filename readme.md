@@ -14,25 +14,33 @@
 
 Open **PowerShell** (not CMD), then run this command:
 
-```powershell```
+```powershell
 (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
-
+```
 ---
 
 ## Install Project Dependencies
 
 - If you're working with a project that already has a `pyproject.toml` file, run:
+```bash
 poetry install --no-root
+```
 
 ### Create a New Poetry Project
 - To start a new project with Poetry, run:
+```bash
 poetry init
+```
 
 ## Manage Dependencies
 - To add a new dependency:
+```bash
 poetry add <package-name>
+```
 - To remove a dependency:
+```bash
 poetry remove <package-name>
+```
 
 ---
 # What is FastApi
@@ -43,17 +51,25 @@ Uvicorn is a lightning-fast ASGI server used to run FastAPI apps. It handles inc
 
 ## Installing FastAPI and Uvicorn
 - Add FastAPI with standard dependencies:
+```bash
 poetry add "fastapi[standard]"
+```
 
 - Add Uvicorn (ASGI server):
+```bash
 poetry add uvicorn
+```
 
 ## Run with Python
 - Use poetry run to execute Python scripts:
+```bash
 poetry run python <relative-path-to-file>
+```
 
 ## Run with FastAPI/Uvicorn
 - Use poetry run with Uvicorn to serve FastAPI applications:
+```bash
 poetry run uvicorn <relative-path-to-module>:app --reload
+```
   - Replace / with . in the path, and change .py to :app.
 
