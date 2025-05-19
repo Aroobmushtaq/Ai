@@ -49,5 +49,6 @@ def create_user(user: dict):
         "message": "User created",
         "user": user
     }
+app.include_router(router, prefix="/api")
 
 ```
