@@ -5,7 +5,7 @@ import shutil
 import os
 
 #  Define the folder where uploaded files will be saved
-UPLOAD_FOLDER = "03_fastapi/uploads"
+UPLOAD_FOLDER = "02_fastapi/uploads"
 
 #  Create the upload folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
