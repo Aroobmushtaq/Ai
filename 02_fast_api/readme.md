@@ -13,7 +13,7 @@ def read_root():
 ```
 #  FastAPI Parameters 
 
-# 2. Path Parameters
+## 2. Path Parameters
 - Path parameters are used to capture values from the URL path itself.
 
 ```bash
@@ -22,7 +22,7 @@ def read_item(item_id: int):
     return {"item_id": item_id}
 ```
 
-# 3. Query Parameters
+## 3. Query Parameters
 Query parameters are values sent in the URL after the ? symbol.
 
 ```bash
@@ -30,7 +30,7 @@ Query parameters are values sent in the URL after the ? symbol.
 def search_items(q: str = None, limit: int = 10):
     return {"query": q, "limit": limit}
 ```
-# 4. Organizing Routes with APIRouter
+## 4. Organizing Routes with APIRouter
 
 For larger projects, FastAPI offers APIRouter to modularize your routes and keep things clean.
 
@@ -52,3 +52,6 @@ def create_user(user: dict):
 app.include_router(router, prefix="/api")
 
 ```
+---
+## 4. Middleware 
+Middleware can intercept requests/responses before they reach the route.
