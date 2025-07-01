@@ -28,3 +28,8 @@ def create_todo(todo: TodoBase, db: Session = Depends(get_db)):
 @app.get("/todos", response_model=list[TodoBase])
 def get_todos(db: Session = Depends(get_db)):
     return db.query(Todo).all()
+
+# Generate Migration Script
+# uv run alembic revision --autogenerate -m "create todos table"
+# Apply Migrations
+# uv run alembic upgrade head
