@@ -1,9 +1,8 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from models.todo_model import Todo  # Assuming your model is in models.py
-from config.database import get_db  # Assuming your DB setup is in database.py
 from pydantic import BaseModel
-
+from dataBases.fast_api_postgress.models.todo_model import Todo
+from dataBases.fast_api_postgress.config.database import get_db
 app = FastAPI()
 
 # --- Pydantic schema ---
