@@ -1,8 +1,6 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
+from fastapi import FastAPI
 from pydantic import BaseModel
-from dataBases.fast_api_postgress.models.todo_model import Todo
-from dataBases.fast_api_postgress.config.database import get_db
+from routes import todo_routes,user_routes
 app = FastAPI()
 
 # --- Pydantic schema ---
@@ -13,21 +11,8 @@ class TodoBase(BaseModel):
     class Config:
         orm_mode = True
 
-# --- Create Todo ---
-@app.post("/todos", response_model=TodoBase)
-def create_todo(todo: TodoBase, db: Session = Depends(get_db)):
-    print("Creating todo:", todo)
-    new_todo = Todo(title=todo.title, description=todo.description)
-    db.add(new_todo)
-    db.commit()
-    db.refresh(new_todo)
-    return new_todo
-
-# --- Get all Todos ---
-@app.get("/todos", response_model=list[TodoBase])
-def get_todos(db: Session = Depends(get_db)):
-    return db.query(Todo).all()
-
+app.include_router(todo_routes.todo_router, prefix="/todos", tags=["Todo"])
+app.include_router(user_routes.user_router, prefix="/users", tags=["User"])
 # Generate Migration Script
 # uv run alembic revision --autogenerate -m "create todos table"
 # Apply Migrations

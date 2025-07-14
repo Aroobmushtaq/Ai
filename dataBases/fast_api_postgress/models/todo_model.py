@@ -1,7 +1,13 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-
 Base = declarative_base()
+class Users(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, CheckConstraint('value > 5'),  index=True)
+    email = Column(String, CheckConstraint('email ~* "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"'), nullable=False, unique=True, ) # type: ignore
+    password = Column(String, nullable=True)
 
 class Todo(Base):
     __tablename__ = 'todos'
