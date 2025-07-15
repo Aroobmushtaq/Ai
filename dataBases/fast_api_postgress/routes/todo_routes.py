@@ -3,6 +3,7 @@ from config.database import get_db
 from sqlalchemy.orm import Session
 from models.todo_model import Todo
 from sqlalchemy.orm import Session
+from validations.validation import TodoBase
 todo_router = APIRouter()
 # --- Create Todo ---
 @todo_router.post("/todos", response_model=TodoBase)

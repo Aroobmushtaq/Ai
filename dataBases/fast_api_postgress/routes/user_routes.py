@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from config.database import get_db
 from models.todo_model import Users
 from utils.auth_utils import create_access_token, verify_api_key
-from validations.validation import LoginUser, UserCreate
+from validations.validation import UserCreate,LoginUser
 
 user_router = APIRouter()
 
@@ -66,3 +66,4 @@ def login_user(user: LoginUser, db: Session = Depends(get_db)):
             "status": "error",
             "data": None
         }
+

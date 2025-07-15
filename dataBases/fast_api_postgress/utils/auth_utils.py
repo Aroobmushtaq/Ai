@@ -1,13 +1,17 @@
+# utils/auth_utils.py
+
 from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 import os
+from fastapi import HTTPException
 
-# Example static secret key (or use os.getenv("SECRET_KEY"))
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")
+# Set your secret key
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+# Create JWT token
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     try:
         to_encode = data.copy()
@@ -19,8 +23,22 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         print("Error creating token:", e)
         return None
 
-# Example usage:
-if __name__ == "__main__":
-    user_data = {"sub": "user@example.com"}  # typically use "sub" (subject) to hold user identifier
-    token = create_access_token(user_data)
-    print("Generated Token:", token)
+# Decode JWT token
+def decode_access_token(token: str):
+    try:
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return decoded
+    except jwt.ExpiredSignatureError:
+        print("Token expired")
+        return None
+    except jwt.InvalidTokenError:
+        print("Invalid token")
+        return None
+
+# ✅ Add this function
+def verify_api_key(api_key: str):
+    expected_key = os.getenv("API_KEY", "your-default-api-key")
+    if api_key == expected_key:
+        return True
+    else:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
