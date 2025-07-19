@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from config.database import get_db
 from models.todo_model import Users
-from utils.auth_utils import create_access_token, verify_api_key
+from utils.auth_utils import create_access_token,hash_password
 from validations.validation import UserCreate,LoginUser
 
 user_router = APIRouter()
@@ -10,7 +10,8 @@ user_router = APIRouter()
 @user_router.post("/register")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     try:
-        valid_user = Users(name=user.name, email=user.email, password=user.password)  # Plain text password
+        user_hash_password = hash_password(user.password)
+        valid_user = Users(name=user.name, email=user.email, password=user_hash_password)  # Plain text password
         db.add(valid_user)
         db.commit()
         db.refresh(valid_user)
@@ -36,7 +37,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
             "data": None
         }
 
-@user_router.post("/login", dependencies=[Depends(verify_api_key)])
+@user_router.post("/login")
 def login_user(user: LoginUser, db: Session = Depends(get_db)):
     try:
         db_user = db.query(Users).filter(Users.email == user.email).first()
