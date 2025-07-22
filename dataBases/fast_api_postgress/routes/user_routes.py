@@ -67,7 +67,7 @@ def login_user(user: LoginUser, db: Session = Depends(get_db)):
         print(e)
         return {
             "message": str(e),
-git             "status": "error",
+          "status": "error",
             "data": None
         }
 
