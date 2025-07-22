@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 import os
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer,APIKeyHeader
 from passlib.context import CryptContext
 # Set your secret key
@@ -12,6 +12,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 def hash_password(password):
     return pwd_context.hash(password)
 # Create JWT token
@@ -37,11 +40,15 @@ def decode_access_token(token: str):
     except jwt.InvalidTokenError:
         print("Invalid token")
         return None
-
-# ✅ Add this function
-def verify_api_key(api_key: str):
-    expected_key = os.getenv("API_KEY", "your-default-api-key")
-    if api_key == expected_key:
-        return True
-    else:
-        raise HTTPException(status_code=401, detail="Invalid API Key")
+#verify token
+def verify_token(token: str = Depends(oauth2_scheme)):
+    try:
+        decoded = decode_access_token(token)
+        if decoded is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return decoded
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print("Error verifying token:", e)
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from config.database import get_db
 from models.todo_model import Users
-from utils.auth_utils import create_access_token,hash_password
+from utils.auth_utils import create_access_token,hash_password,verify_password
 from validations.validation import UserCreate,LoginUser
 
 user_router = APIRouter()
@@ -10,6 +10,7 @@ user_router = APIRouter()
 @user_router.post("/register")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     try:
+        print("Creating user:", user)
         user_hash_password = hash_password(user.password)
         valid_user = Users(name=user.name, email=user.email, password=user_hash_password)  # Plain text password
         db.add(valid_user)
@@ -40,13 +41,15 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @user_router.post("/login")
 def login_user(user: LoginUser, db: Session = Depends(get_db)):
     try:
+
         db_user = db.query(Users).filter(Users.email == user.email).first()
         if not db_user:
             raise HTTPException(status_code=404, detail="User not found")
-
-        if user.password != db_user.password:  # Comparing plain text
+        # Verify password
+        is_valid_password = verify_password(user.password, db_user.password)
+    
+        if is_valid_password == False:
             raise HTTPException(status_code=401, detail="Invalid password")
-
         token = create_access_token(data={"email": db_user.email, "name": db_user.name, "user_id": db_user.id})
         user_data = {
             "name": db_user.name,
@@ -64,7 +67,7 @@ def login_user(user: LoginUser, db: Session = Depends(get_db)):
         print(e)
         return {
             "message": str(e),
-            "status": "error",
+git             "status": "error",
             "data": None
         }
 
