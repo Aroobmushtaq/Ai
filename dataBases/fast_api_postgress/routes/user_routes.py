@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from config.database import get_db
 from models.todo_model import Users
-from utils.auth_utils import create_access_token,hash_password,verify_password
+from utils.auth_utils import create_access_token,hash_password,verify_password,verify_api_key
 from validations.validation import UserCreate,LoginUser
 
 user_router = APIRouter()
@@ -38,7 +38,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
             "data": None
         }
 
-@user_router.post("/login")
+@user_router.post("/login", dependencies=[Depends(verify_api_key)])
 def login_user(user: LoginUser, db: Session = Depends(get_db)):
     try:
 

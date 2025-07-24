@@ -8,7 +8,8 @@ from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer,APIKeyHeader
 from passlib.context import CryptContext
 # Set your secret key
-SECRET_KEY = "sfgyugb78jkjbhgaujh78yh"
+# SECRET_KEY = "sfgyugb78jkjbhgaujh78yh"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -54,3 +55,14 @@ def verify_token(token: str = Depends(oauth2_scheme)):
     except Exception as e:
         print("Error verifying token:", e)
         raise HTTPException(status_code=500, detail="Internal server error")
+
+# verify api key
+def verify_api_key(api_key_header: str = Depends(api_key_header)):
+    try:
+        if api_key_header == os.getenv("API_KEY"):
+            return api_key_header
+        else:
+            raise HTTPException(status_code=401, detail="Invalid API Key")
+    except Exception as e:
+      print('An exception occurred',e)
+      raise HTTPException(status_code=401, detail="Invalid API Key")
