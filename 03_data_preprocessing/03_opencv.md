@@ -1,0 +1,1 @@
+📖 **Learn more:** [Full OpenCV Guide](https://github.com/techloset/agentic-ai/blob/master/05_data_preprocessing/03_opencv.md)
