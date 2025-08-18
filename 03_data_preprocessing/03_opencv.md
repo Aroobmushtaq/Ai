@@ -1,3 +1,8 @@
+# OpenCV (cv2) Project
+
+## Introduction
+OpenCV (Open Source Computer Vision Library) is an open-source computer vision and machine learning software library. It is mainly used for real-time computer vision applications like image processing, video analysis, face detection, object tracking, etc.
+
 # Face Detection 
 ```bash import cv2
 
@@ -33,4 +38,4 @@ cap.release()
 cv2.destroyAllWindows()
 ```
 
-📖 **Learn more:** [Full OpenCV Guide](https://github.com/techloset/agentic-ai/blob/master/05_data_preprocessing/03_opencv.md)
+ **Learn more:** [Full OpenCV Guide](https://github.com/techloset/agentic-ai/blob/master/05_data_preprocessing/03_opencv.md)
