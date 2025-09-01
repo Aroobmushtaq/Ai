@@ -46,4 +46,4 @@ Example: [0.1, 0.9] → 10% cat, 90% dog.
 
 
 
-[https://docs.google.com/document/d/1BN4-8vTZ94PAot-5ZSufZ_yXAIe2epuxY_d3iu7lzlE/edit?usp=sharing]
+(Neural Network Documentation)[https://docs.google.com/document/d/1BN4-8vTZ94PAot-5ZSufZ_yXAIe2epuxY_d3iu7lzlE/edit?usp=sharing]
