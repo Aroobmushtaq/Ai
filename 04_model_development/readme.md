@@ -47,3 +47,4 @@ Example: [0.1, 0.9] → 10% cat, 90% dog.
 
 
 (Neural Network Documentation)[https://docs.google.com/document/d/1BN4-8vTZ94PAot-5ZSufZ_yXAIe2epuxY_d3iu7lzlE/edit?usp=sharing]
+(Large Language Models Documentation)[https://github.com/techloset/agentic-ai/blob/master/02_ai_theory/stanford_cs229_building_llms.md]
