@@ -20,13 +20,20 @@ def get_todos():
 def add_todo(todo: TodoItem):
     todos.append(todo.dict())
     return {"message": "Todo added successfully"}
-@app.put("/todo/{todo_id}")
-def update_todo(todo_id:id,completed:bool):
+@app.put("/todos/{todo_id}")
+def update_todo(todo_id: int,completed: bool):
     for todo in todos:
         if todo["id"]==todo_id:
            todo["completed"]=completed
            return{"message":"Todo Update Successfully"}
         return{"error":"todo not found"}
-
+    
+@app.delete("/todos/{todo_id}")
+def delete_todo(todo_id: int):
+    for i, todo in enumerate(todos):
+        if todo["id"] == todo_id:
+            todos.pop(i)
+            return {"message": "Todo deleted successfully"}
+    return {"error": "Todo not found"}
 
 
