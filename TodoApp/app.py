@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
-from db import todo_collection
+from TodoApp.db import todo_collection
 from bson import ObjectId
 
 app = FastAPI()
