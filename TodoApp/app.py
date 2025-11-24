@@ -4,49 +4,55 @@ from typing import Optional
 from TodoApp.db import todo_collection
 from bson import ObjectId
 
+# import ai pieces
+from TodoApp.ai_tools import add_todo_task, complete_todo_by_id, delete_todo_by_id, get_all_todos
+from TodoApp.openai_client import parse_user_message_to_json
+
 app = FastAPI()
 
 class TodoItem(BaseModel):
     task: str
     completed: bool = False
 
-# Helper to convert MongoDB _id to string
-def todo_helper(todo) -> dict:
-    return {
-        "id": str(todo["_id"]),
-        "task": todo["task"],
-        "completed": todo["completed"]
-    }
+# ... keep your existing helper and CRUD routes here (as you already have) ...
 
-@app.get("/todos")
-async def get_todos():
-    todos = []
-    async for todo in todo_collection.find():
-        todos.append(todo_helper(todo))
-    return todos
 
-@app.post("/todos")
-async def add_todo(todo: TodoItem):
-    new_todo = await todo_collection.insert_one(todo.dict())
-    created_todo = await todo_collection.find_one({"_id": new_todo.inserted_id})
-    return todo_helper(created_todo)
+# NEW: AI endpoint
+class AIRequest(BaseModel):
+    message: str
 
-@app.put("/todos/{todo_id}")
-async def update_todo(todo_id: str, completed: bool):
-    result = await todo_collection.update_one(
-        {"_id": ObjectId(todo_id)},
-        {"$set": {"completed": completed}}
-    )
+@app.post("/ai")
+async def ai_handle(req: AIRequest):
+    """
+    Receive user's natural text (req.message), ask OpenAI what to do (returns JSON),
+    then call the corresponding ai_tools function and return the result.
+    """
+    parsed = await parse_user_message_to_json(req.message)
+    action = parsed.get("action")
+    params = parsed.get("params", {})
 
-    if result.modified_count == 1:
-        updated_todo = await todo_collection.find_one({"_id": ObjectId(todo_id)})
-        return todo_helper(updated_todo)
-    return {"error": "Todo not found"}
+    # Normalize "LAST" directive handling
+    if action in ("complete", "delete") and params.get("todo_id") == "LAST":
+        # find most recent todo id
+        last = await todo_collection.find().sort([("_id", -1)]).to_list(length=1)
+        if not last:
+            return {"error": "No todos found"}
+        params["todo_id"] = str(last[0]["_id"])
 
-@app.delete("/todos/{todo_id}")
-async def delete_todo(todo_id: str):
-    result = await todo_collection.delete_one({"_id": ObjectId(todo_id)})
-
-    if result.deleted_count == 1:
-        return {"message": "Todo deleted successfully"}
-    return {"error": "Todo not found"}
+    if action == "add":
+        task = params.get("task") or req.message
+        return await add_todo_task(task)
+    elif action == "complete":
+        todo_id = params.get("todo_id")
+        if not todo_id:
+            return {"error": "todo_id required for complete action"}
+        return await complete_todo_by_id(todo_id)
+    elif action == "delete":
+        todo_id = params.get("todo_id")
+        if not todo_id:
+            return {"error": "todo_id required for delete action"}
+        return await delete_todo_by_id(todo_id)
+    elif action == "list":
+        return await get_all_todos()
+    else:
+        return {"error": "unknown action, showing todos", "result": await get_all_todos()}
