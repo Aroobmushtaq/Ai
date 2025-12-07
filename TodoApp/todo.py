@@ -3,75 +3,65 @@ import asyncio
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
+from agents import Agent, OpenAIChatCompletionsModel, Runner, function_tool
 
-# ------------------------------
-# Load environment
-# ------------------------------
 load_dotenv()
-OPENAI_KEY = os.getenv("OPENAI_API_KEY")
+GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 DB_NAME = os.getenv("DB_NAME", "todo_app")
 
-if not OPENAI_KEY:
-    raise RuntimeError("OPENAI_API_KEY not set in .env")
+if not GEMINI_KEY:
+    raise RuntimeError("GEMINI_API_KEY not set in .env")
 
-# ------------------------------
-# MongoDB setup
-# ------------------------------
+# MongoDB
 mongo_client = AsyncIOMotorClient(MONGO_URI)
 db = mongo_client[DB_NAME]
 todos_collection = db.todos
 
-# ------------------------------
-# OpenAI client
-# ------------------------------
-client = AsyncOpenAI(api_key=OPENAI_KEY)
+# Gemini client
+client = AsyncOpenAI(
+    api_key=GEMINI_KEY,
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+)
 
-# ------------------------------
-# Todo functions
-# ------------------------------
-async def add_todo(item: str):
-    await todos_collection.insert_one({"item": item})
+# ----------------- Tools -----------------
+@function_tool
+def add_todo(item: str):
+    todos_collection.insert_one({"item": item})
     return f"Added todo: {item}"
 
-async def show_todos():
-    todos = await todos_collection.find().to_list(length=100)
+@function_tool
+def show_todos():
+    todos = list(todos_collection.find())
     if not todos:
-        return "Your todo list is empty."
+        return "Todo list is empty."
     return "\n".join(f"{i+1}. {t['item']}" for i, t in enumerate(todos))
 
-async def ask_openai(prompt: str):
-    """Ask OpenAI for simple instructions"""
-    response = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=150
-    )
-    return response.choices[0].message.content
+@function_tool
+def delete_todo(index: int):
+    todo = todos_collection.find().skip(index-1).limit(1)
+    todos_collection.delete_one({"_id": todo["_id"]})
+    return f"Deleted todo #{index}"
 
-# ------------------------------
-# CLI Loop
-# ------------------------------
+# ----------------- Agent -----------------
+agent = Agent(
+    name="TodoAgent",
+    instructions="You are a todo agent. You can add, show, update, and delete todos.",
+    model=OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=client),
+    tools=[add_todo, show_todos, delete_todo]
+)
+
+# ----------------- CLI -----------------
 async def main():
-    print("=== Todo App with OpenAI ===")
+    print("=== Gemini Todo Agent ===")
     print("Type 'exit' to quit.")
 
     while True:
-        query = input("\nEnter your command: ")
+        query = input("Command: ")
         if query.lower() in ["exit", "quit"]:
             break
-
-        # Basic commands
-        if query.lower().startswith("add "):
-            item = query[4:]
-            result = await add_todo(item)
-        elif query.lower() in ["show", "list"]:
-            result = await show_todos()
-        else:
-            # Use OpenAI to help interpret commands
-            result = await ask_openai(f"Interpret this command for a todo app: {query}")
-
-        print(f"\n{result}")
+        result = await Runner.run(agent, query)
+        print(result.final_output)
 
 if __name__ == "__main__":
     asyncio.run(main())
